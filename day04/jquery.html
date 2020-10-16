@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--
+        	以前通过js获取对象的时候
+        		var obj=document.getElementById("id");
+        	jquery给了一种方法获取元素：$("选择器")
+        	
+        	js类库：
+        		对常用的方法和对象进行封装，方便使用。
+        	jQuery:
+        		jquery和html的整合：
+        			jquery是单独的js文件
+        				通过script标签的src属性导入即可
+        			获取一个jquery对象
+        				$("选择器")
+        			dom对象和jquery对象之间的转换
+        				dom对象->jquery对象
+        					$(dom对象)
+        				jquery对象->dom对象
+        					方式1：
+        						jquery对象[index]
+        					方式2：
+        						jquery对象.get(index)
+        			页面加载：
+        				js:
+        					window.onload=function(){}//在一个页面中只能使用一次
+        				jquery:
+        					方式一：
+        						$(function(){...})//在一个页面可以使用多次
+        					方式二：
+        						$(document).ready(function(){})
+        			派发事件：
+        				$("选择器").click(function(){...})
+        				等价于原生js中
+        					dom对象.onclick=function(){...}
+        				掌握事件(去掉on)：
+        					focus
+        					click
+        					blur
+        					submit
+        					change
+        					
+        				jquery中效果：
+        					隐藏或展示
+        						show(毫秒数) hide(毫秒数)
+        					滑入或滑出
+        						slideDown(毫秒数)：向下滑入
+        						slideUp(毫秒数)：向上滑出
+        					淡入或淡出
+        						fadeIn(int):淡入
+        						fadeOut(int):淡出
+        				
+        				选择器总结：
+        					基本选择器：
+        						$("#id值") $(".class值") $("标签名")
+        						了解：$("*")
+        						理解：获取多个选择器
+        						$("#id值,.class值")
+        					层次选择器：
+        						a b:a的所有b后代
+        						a>b:a的所有孩子
+        						a+b:a的下一个兄弟(大弟弟)
+        						a~b:a的所有弟弟(后面的元素)
+        					基本过滤选择器：
+        						:first 第一个
+        						:last 最后一个
+        						:odd 索引奇数
+        						:even 索引偶数
+        						:eq(index) 指定索引
+        						:gt(index) >
+        						:lt(index) <
+        					内容过滤器：
+        						:has("选择器"):包含指定选择器的元素
+        					可见过滤：
+        						:hidden 在页面不展示的元素(一般指 input type="hidden"和display:none)
+        						:visible
+        					属性过滤器：
+        						[属性名]
+        						[属性名="值"]
+        					表单选择器：
+        						:input 所有的表单子标签 input select textarea button
+        		属性和css操作总结：
+        			对属性的操作：
+        				attr():设置或者获取元素的属性
+        					方式1：获取
+        						attr("属性名称")
+        					方式2：设置一个属性
+        						attr("属性名称","值")
+        					方式3：设置多个属性 json
+        						attr({
+        							"属性1":"值1",
+        							"属性2":"值2",
+        							"属性3":"值3"
+        						});
+        				removeAttr("属性名称")：移除指定属性
+        				
+        				添加class属性的时候
+        				attr("class","值");
+        				等价于：
+        					addClass("指定的样式值");
+        					removeClass("指定的样式值");      			
+        			对css的操作：操作元素的style属性
+        				css():获取或者设置css样式
+        					方式一：获取
+        						css("属性名")
+        					方式二：设置一个属性
+        						css("属性名","值");
+        					方式三：设置多个
+        						css({
+        							"属性1":"值1",
+        							"属性2":"值2",
+        							"属性3":"值3"
+        						});
+        				获取元素的尺寸：
+        					width(),height()
+        				若jquery版本>1.6，统一使用prop操作元素的属性(attr获取不了checked属性)
+        		
+        		技术
+        			遍历数组
+        				数组.each(function(){});
+        				$.each(数组,function(){});
+        			设置或获取value属性
+        				jquery对象.val():获取
+        				jquery对象.val("..."):设置
+        			设置或获取标签体的内容
+        				html()
+        				text()
+        				xxxxx():获取标签体的内容
+        				xxxxx("..."):设置标签体的内容
+        			设置值的区别：
+        				html:会把字符串解析
+        				text:只作为普通的字符串
+        			获取的区别：
+        				html:获取的html源码
+        				text:获取的只是页面展示的内容
+        				
+        		创建一个元素 $("<标签>标签体</标签>")
+    	
+    	文档操作
+    		内部插入
+    			a.append(c):将c插入到a的内部(标签体)后面
+    			a.prepend(c):将c插入到a的内部的前面
+    			
+    			a.appendTo(c):将a插入到c的内部的后面
+    			prependTo 
+    		外部插入
+    			a.after(c):将c放到a的后面
+    			a.before(c):将c放到a的前面
+    			
+    			a.insertAfter(c)
+    			a.insertBefore(c)
+    		删除
+    			empty() 清空元素
+    			remove() 删除元素
+    			
+    		表单对象属性过滤选择器
+    			:enabled 可用的
+    			:disabled 不可用
+    			:checked 选中的(单选框和复选框)
+    			:selected 选中的(下拉选)
+        </-->
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	</body>
+</html>

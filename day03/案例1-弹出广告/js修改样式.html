@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<script>
+		//点击按钮之后，给id为div0的元素添加边框背景色宽高
+		function btncli(){
+			//获取元素
+			var divObj=document.getElementById("div0");
+			//操作元素
+			divObj.style.backgroundColor="#ff0";
+			divObj.style.border="1px solid red";
+			divObj.style.width="100px";
+			divObj.style.height="100px";
+		}
+	</script>
+	<body>
+		<input type="button" value="将div加上样式" onclick="btncli()" />
+		<div id="div0"></div>
+	</body>
+</html>

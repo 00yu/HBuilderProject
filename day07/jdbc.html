@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+	<!--
+		块编辑 alt+shift+a 变大写ctrl+shift+x 变小写ctrl+shift+y 向下复制一行alt+ctrl+向下
+		注释或去掉注释ctrl+/ 向下移动一行alt+向下
+		JDBC(Java Data Base Connectivity)：Java数据库连接-- 面向接口开发思想
+			是一种执行SQL语句的java API(类和接口)，为多种数据库提供统一访问，是Java访问数据库的标准规范
+			JDBC需要连接驱动，驱动也是类库，实现了Sun规定接口的实现类重写方法。
+		JDBC开发步骤
+			1.注册驱动
+				告知JVM使用的是哪一个数据库的驱动
+				使用java.sql.DriverManager类静态方法registerDriver(Driver driver)
+				Driver是一个接口，参数传递MySQL驱动程序中的实现类
+				com.mysql.cj.jdbc->Driver.class：
+					public class Driver extends NonRegisteringDriver implements java.sql.Driver {
+					    //
+					    // Register ourselves with the DriverManager
+					    //
+					    static {
+					        try {
+					        	//注册驱动
+					            java.sql.DriverManager.registerDriver(new Driver());
+					        } catch (SQLException E) {
+					            throw new RuntimeException("Can't register driver!");
+					        }
+					    }
+					
+					    /**
+					     * Construct a new driver and register it with DriverManager
+					     * 
+					     * @throws SQLException
+					     *             if a database error occurs.
+					     */
+					    public Driver() throws SQLException {
+					        // Required for Class.forName().newInstance()
+					    }
+					}
+				驱动类源代码中已经注册了驱动：
+				When a Driver class is loaded, it should create an instance of itself and register it with the DriverManager. 
+				This means that a user can load and register a driver by doing Class.forName("foo.bah.Driver")
+				即使用反射技术将驱动类加入到内容：
+				Class.forName("com.mysql.cj.jdbc.Driver");
+    		2.获取连接	DriverManager类中的静态方法
+    			static Connection getConnection(String url, String user, String password)
+    			返回值是Connection接口的实现类，在mysql驱动程序里
+    			url：数据库地址 jdbc:mysql://连接主机IP(localhost):端口号(3306)/数据库名称
+    			user:用户名(root) password：密码(123)
+    			Connection con=DriverManager.getConnection(url, user, password);
+    			使用JDBC中的类，完成对Mysql数据库的连接
+    		3.获得语句执行平台
+    			通过连接对象获取对sql语句的执行者对象
+    			con对象调用方法 Statement createStatement()获取Statement对象，将SQL语句发送到数据库
+    			返回值是Statement接口的实现类对象，在mysql驱动程序里
+    			Statement st=con.createStatement();
+    		4.执行sql-- 接口Statement：用于执行静态SQL语句并返回它所生成结果的对象
+    			使用执行者对象，向数据库执行sql语句，获取到数据库的执行后结果
+    			int executeUpdate(String sql) 执行数据库中的SQL语句，insert,delete,update
+    			返回值int：操作成功数据表行数
+    			ResultSet executeQuery(String sql) 执行SQL语句中的select查询
+    			返回值ResultSet接口的实现类对象，实现类在mysql驱动里
+    		5.处理结果
+    			ResultSet接口方法boolean next() 返回true,有结果集，返回false无结果集
+    			while(rs.next()){
+    				获取每列数据，使用ResultSet接口的方法getxxx("列名");
+    			}
+    		6.释放资源
+    			close()释放资源
+    			rs.close();
+				st.close();
+				conn.close();
+			
+		SQL的注入攻击 登录案例
+			执行SQL语句，数据表，查询用户名和密码，如果存在，登录成功，不存在登录失败
+			String sql="select * from user where username='' and password='' or 1=1";
+			//无论用户名和密码输入什么where后都为真，查询结果为user表中所有数据
+			String sql="select * from user where username='"+user+"' and password='"+pwd+"'";
+			//用户名随便输入 密码输入x'or'1=1
+			//得到结果为select * from user where username='x' and password='x'or'1=1'
+			//查询结果为user表中所有数据
+		防止注入攻击：
+			Statement子接口PreparedStatement：表示预编译的SQL语句的对象
+				作用：多次高效执行SQL语句
+				PreparedStatement的实现类在数据库的驱动中，用Connection接口的方法prepareStatement(string sql)获取
+				//sql语句中的参数全部用问号占位符
+				String sql="select * from user where username=? and password=?";
+				PreparedStatement pst=con.prepareStatement(sql);
+				//调用pst对象set方法，设置问号占位符上的参数
+				pst.setObject(1,user);
+				pst.setObject(2,pwd);
+				//调用方法，执行SQL，获取结果集
+				ResultSet rs=pst.executeQuery();
+				
+    	案例1-通过jdbc完成单表的curd操作：
+    	需求：
+    		对分类表完成操作
+    	技术分析：
+    		jdbc
+    	jdbc:
+    		java操作数据库,是oracle公司制定的一套规范(一套接口)
+    		驱动：jdbc的实现类,由数据库厂商提供
+    		我们就可以通过一套规范操作不同的数据库了(多态)
+    		jdbc作用：
+    			连接数据库
+    			发送sql语句
+    			处理结果
+    	jdbc操作步骤：
+    		1.数据库和表
+    		2.创建一个项目
+    		3.导入驱动的jar包
+    		4.编码：
+    			注册驱动
+    			获取连接
+    			编写sql
+    			创建预编译的语句执行者
+    			设置参数
+    			执行sql
+    			处理结果
+    			释放资源
+    	
+    	初始化数据库和表：
+    		create database day07;
+    		use day07;
+    		create table category(
+				cid varchar(20) primary key,
+				cname varchar(20)
+			);
+			
+			-- 给分类表初始化数据
+			insert into category values('c001','电器');
+			insert into category values('c002','服饰');
+			insert into category values('c003','化妆品');
+			insert into category values('c004','书籍');
+		
+		IDE打开后 
+			1.修改字符集 utf-8 window->preference->General->workspace->utf-8
+			2.新建java项目
+			3.使用自己的jdk，不要用内置的
+			
+		使用junit单元测试：
+			要求：
+				1.方法是public void xxx(){}
+				2.在方法上添加 @Test
+				3.在 @Test 按住 ctrl+1(快速锁定错误)
+				4.在方法上右键 run as->junit 就可以执行方法了
+				
+			@Test
+			public void f2() throws Exception {
+				//注册驱动 com.mysql.cj.jdbc.Driver是mysql-connector-java 6以上的版本中的
+				Class.forName("com.mysql.cj.jdbc.Driver");
+				//获取连接 ctrl+o导包 useSSL=true使用安全身份连接 serverTimezone=Asia/Shanghai设置时区
+				Connection conn=DriverManager.getConnection("jdbc:mysql://localhost:3306/day07?useSSL=true&serverTimezone=Asia/Shanghai","root","123");
+				//编写sql
+				String sql="select * from category";
+				//创建预编译的语句执行者
+				PreparedStatement st=conn.prepareStatement(sql);
+				//设置参数
+				//执行sql
+				ResultSet rs=st.executeQuery();
+				//处理结果
+				while(rs.next()) {
+					System.out.println(rs.getString("cid")+"::"+rs.getString("cname"));
+				}
+				//释放资源
+				rs.close();
+				st.close();
+				conn.close();
+			}
+		
+		jdbc-api详解：
+			所有的包 都是 java.sql 或者 javax.sql
+			DriverManager:管理一组jdbc的操作 类
+				常用方法：
+					了解：注册驱动
+						static void registerDriver(Driver driver)
+						Driver:java.sql下的接口 驱动
+						通过查看com.mysql.cj.jdbc.Driver的源码，发现里面已经注册
+						只需要将静态代码块执行一次,类被加载到内存中会执行一次
+						现在只需要将类加载到内存中即可：
+							方式1*：
+								Class.forName("全限定名");//包名+类名com.mysql.cj.jdbc.Driver
+							方式2：
+								类名.class;
+							方式3：
+								对象.getClass();
+					掌握：获取连接
+						static Connection getConnection(String url,String user, String password)
+							参数1：
+								协议:数据库类型:(子协议) 参数
+								mysql: jdbc:mysql://localhost:3306/数据库名称
+								oracle: jdbc:oracle:thin@localhost:1521@实例
+							参数2：账户名 root
+							参数3：密码 123
+			Driver:java,sql 接口 驱动
+			Connection:连接 接口
+				常用方法：
+					获取语句执行者：
+						(了解)Statement createStatement():获取普通的语句执行者 会出现sql注入
+						PreparedStatement prepareStatement(String sql):获取预编译语句执行者
+						(了解)CallableStatement prepareCall(String sql):获取调用存储过程的语句执行者
+					了解：
+						setAutoCommit(false):手动开启事务
+						commit():提交事务
+						rollback():事务回滚
+			Statement:语句执行者
+				PreparedStatement:预编译语句执行者 接口(子接口)
+					常用方法：
+						设置参数：setxxx(int第几个问号,Object实际参数);
+							常见方法：
+								setInt
+								setString 
+								setObject
+					执行sql:
+						ResultSet executeQuery():执行r语句 返回结果集
+						int executeUpdate():执行cud语句 返回影响的行数
+			ResultSet:结果集 接口
+				执行查询语句之后返回的结果
+					常用方法：
+						boolean next():判断是否有下一条记录，若有返回true，且将光标移到下一行，若没有则返回false
+							光标一开始处于第一条记录的上面
+						获取具体内容：
+							getxxx(int|string)
+								若参数为Int:第几列
+								若参数为string:列名(字段名)
+						例如：
+							获取cname的内容可以通过
+								getString(2)
+								getString("cname")
+						常用方法：
+							getInt getString(也可以获取int值) getObject(可以获取任意值)
+		常见的配置文件格式：
+			1.properties
+				里面内容的格式 key=value
+			2.xml
+		若我们的配置文件为properties,并且放在src目录下
+		我们可以通过ResourceBundle工具快速获取里面的配置信息
+			使用步骤：
+				1.获取ResourceBundle对象：
+					static ResourceBundle getBundle("不带后缀名文件名称")
+				2.通过ResourceBundle对象获取配置信息
+					String getString(String key):通过制定key获取指定value
+		
+		案例2-通过连接池(数据源) 优化我们的操作
+		需求：
+			使用jdbc的时候，每操作一次都需要获取连接(创建)，用完之后把连接释放(销毁)，因此用连接池来优化curd
+		技术分析：
+			连接池
+				管理数据库的连接
+				作用：
+					提高项目的性能
+				就是在连接池初始化的时候存入一定数量的连接，用的时候通过方法获取，不用的时候归还连接即可。
+				所有的连接池必须实现一个接口 javax.sql.DataSource接口
+				获取连接方法：
+					Conncetion getConnection()
+				归还连接的方法：
+					就是以前释放资源的方法，即调用connection.close();
+				增强方法：
+					1.继承
+					2.装饰者模式(静态代理)
+						使用步骤：
+							1.装饰者和被装饰者要实现同一个接口或者继承同一个类(QQ和CarWrap实现同一个接口Car)
+							2.装饰者中要有被装饰者的引用(CarWrap中有QQ的构造方法，将QQ传进去)
+							3.对需要增强的方法进行加强(重写run方法)
+							4.对不需要增强的方法调用原来的方法即可(调用原来stop方法)
+					3.动态代理
+			自定义一个连接池
+				
+			常用连接池：
+				DBCP(理解)
+					apache组织
+					使用步骤：
+						1.导入jar包(commons-dbcp2.jar和commons-pool2.jar以及commons-logging.jar)
+						2.使用api
+							a.硬编码
+								//创建连接池
+								BasicDataSource ds=new BasicDataSource();
+								//配置信息
+								ds.setDriverClassName("com.mysql.cj.jdbc.Driver");
+								ds.setUrl("jdbc:mysql://localhost:3306/day07?useSSL=true&serverTimezone=Asia/Shanghai");
+								ds.setUsername("root");
+								ds.setPassword("123");
+							b.配置文件
+								事先编写一个properties文件
+								//存放配置文件
+								Properties prop=new Properties();
+								//设置
+								//prop.setProperty("driverClassName", "com.mysql.cj.jdbc.Driver");
+								prop.load(new FileInputStream("src/dbcp.properties"));
+								//创建连接池
+								DataSource ds=new BasicDataSourceFactory().createDataSource(prop);
+				C3P0(*)
+					dbcp没有自动回收空闲连接的功能，而c3p0可以
+					hibernate和spring中使用
+					使用步骤：
+						1.导入jar包(c3p0.jar和mchange-commons-java.jar)
+						2.使用api
+							a.硬编码(不推荐)
+								ComboPooledDataSource ds=new ComboPooledDataSource();
+								//设置基本参数
+								ds.setDriverClass("com.mysql.cj.jdbc.Driver");
+								ds.setJdbcUrl("jdbc:mysql://localhost:3306/day07?useSSL=true&serverTimezone=Asia/Shanghai");
+								ds.setUser("root");
+								ds.setPassword("123");
+							b.配置文件
+								配置文件名称:c3p0.properties或者c3p0-config.xml
+								配置文件路径:src下
+								编码只需要一句话：
+									ComboPooledDataSource ds=new ComboPooledDataSource();//使用默认配置
+									ComboPooledDataSource ds=new ComboPooledDataSource("itcast");//使用命名配置
+			
+			案例3-使用dbutils完成curd操作
+			技术分析：
+				dbutils
+			dbutils:
+				是apache组织的一个工具类，jdbc的框架，更方便我们使用
+				使用步骤：
+					1.导入jar包(commons-dbutils.jar)
+					2.创建一个queryrunner类
+						queryrunner作用：操作sql语句
+							构造方法：
+								new QueryRunner(Datasource ds);
+								QueryRunner qr=new QueryRunner(DataSourceUtils.getDataSource());
+					3.编写sql
+					4.执行sql
+						query(...):执行r操作	
+						update(...):执行cud操作 qr.update(sql, "c019","厨房电器");
+				核心类或接口：
+					QueryRunner：类名
+						作用：操作sql语句
+						构造器：
+							new QueryRunner(Datasource ds);
+						注意：
+							底层帮我们创建连接，创建语句执行者，释放资源
+						常用方法：
+							query(...):执行r操作	
+							update(...):执行cud操作 qr.update(sql, "c019","厨房电器");
+					DbUtils:释放资源，控制事务
+							closeQuietly():内部处理了异常
+							commitAndClose():提交事务并释放连接
+					ResultSetHandler:封装结果集 接口
+						9个实现类
+						ArrayHandler:将查询结果的第一条记录，封装成数组返回
+						ArrayListHandler:将查询结果的每一条记录，封装成数组，将每一个数组放入List中返回
+						BaseResultSetHandler
+						(**)BeanHandler:将查询结果的第一条记录封装成指定的bean对象返回
+						(**)BeanListHandler:将查询结果的每一条记录封装成指定的bean对象返回，将每一个bean对象放入List中返回
+						BeanMapHandler
+						ColumnListHandler:将查询结果的指定一列放入list中返回
+						KeyedHandler
+						MapHandler:将查询结果的第一条记录封装成map,字段名作为key，值为value返回
+						(*)MapListHandler:将查询结果的每一条记录封装成map，将每一个map集合放入list中返回
+						(*)ScalarHandler:针对于聚合函数 例如:count() 返回的是一个Long值
+						
+    -->
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	</body>
+</html>

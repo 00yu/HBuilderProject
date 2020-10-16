@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<!--
+    	步骤分析：
+    		1.先有一个表单
+    		2.在form上添加一个事件 onsubmit="return checkForm()"
+    		3.编写checkForm方法
+    		4.判断每个表单子标签的内容
+    		5.判断是否满足要求，
+    			若满足，不用管
+    			若不满足，表单不能提交，返回false，且提示信息
+    -->
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script>
+			function checkForm(){
+				var usernameObj=document.getElementById("username");
+				var username=usernameObj.value;
+				//判断value是否为空，若为空不能提交表单
+				if(username==null || username==""){
+					alert("用户名不能为空");
+					return false;
+				}
+				var pwdObj=document.getElementById("password");
+				var pwdValue=pwdObj.value;
+				if(pwdValue==null || pwdValue==""){
+					alert("密码不能为空");
+					return false;
+				}
+				return true;
+			}
+		</script>
+	</head>
+	<body>
+		<form action="#" method="get" onsubmit="return checkForm()">
+			姓名：<input name="username" id="username"><br />
+			密码：<input type="password" name="password" id="password"><br />
+			保存：<input type="submit" value="保存">
+				  <input type="reset">
+				  <input type="button" value="普通按钮">
+				  <br />
+		</form>
+	</body>
+</html>

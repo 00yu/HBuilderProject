@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!--
+	frameset:框架集(与body不能共存)
+		常用属性:
+			cols:垂直切割
+			rows:水平切割
+		常见子标签:
+			frame
+	frame:具体实现
+		常用属性:
+			src:展示页面的url
+-->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<frameset rows="10%,*,10%">
+		<frame src="head.html"/>
+		<frameset cols="20%,*">
+			<frame src="left.html"/>
+			<frame src="main.html" name="mainFrame"/>
+		</frameset>
+		<frame src="foot.html"/>
+	</frameset>
+</html>

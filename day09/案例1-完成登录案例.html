@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	</body>
+</html>
+<!--
+	案例1-完成登录案例
+	需求：
+		在页面上输入用户名和密码，提交到服务器上，服务器拿着用户名和密码去数据库中查找有无此用户
+			若有用户，则提示登录成功
+			若无此用户，则提示用户名密码不匹配
+	技术分析：
+		表单
+		servlet
+		请求(request)
+		响应(response)
+	
+	表单：
+		收集用户数据
+		所有的字段要想提交到服务器必须有name属性
+		提交的地址 action
+		请求的方式 post
+	servlet:
+		动态的web开发技术，本质上就是一个类，运行在服务器端的一个java小程序
+		处理业务逻辑(代码),生成动态的web内容
+	编写一个servlet步骤：
+		1.编写一个类
+			a.继承HttpServlet
+			b.重写doGet或者doPost方法
+		2.编写配置文件(web-inf/web.xml)
+			a.注册servlet
+			b.绑定路径
+		3.访问
+			http://主机名称:端口号/项目名/绑定的路径
+	接收参数：	格式：key=value
+		String value=request.getParameter("key")
+		例如：http://localhost/day09/hello?username=tom
+			request.getParameter("username")就可以获取tom值
+	回写内容：
+		response
+		response.getWriter().print("success");
+		处理相应数据乱码
+			resp.setContentType("text/html;charset=utf-8");//建议放在方法第一行
+			resp.getWriter().print("数据:"+value);
+	步骤分析：
+		1.先有数据库和表、
+			create database day09;
+			use day09;
+			create table user(
+				id int primary key auto_increment,
+				username varchar(20),
+				password varchar(20),
+				email varchar(20),
+				name varchar(20),
+				sex varchar(10),
+				birthday date,
+				hobby varchar(50)
+			);
+			insert into user values (null,'tom','123','tom@126.com','tom','1','1988-01-01',null);
+		2.创建工程
+		3.复制页面
+			修改login.html
+				给用户名和密码添加name属性
+				修改表单的action属性
+					action="http://localhost/day09/login"
+					method="post"
+		4.导入jar包
+			驱动jar包 dbutils c3p0
+		5.导入工具类和配置文件
+			datasourceUtils
+			c3p0-config.xml(注意修改数据库名称)
+		6.创建servlet(LoginServlet:路径 /login)
+			接受用户名和密码
+			调用service层(UserService)完成登录操作
+			提示信息
+		7.UserService
+			login(username,password)
+				调用dao
+		8.dao
+			通过用户名和密码查询数据库
+	Servlet总结：
+		Servlet的体系结构：
+			Servlet:接口
+			GenericServlet:抽象类
+			HttpServlet:抽象类
+			自定义servlet
+			
+			servlet常用方法：
+				void init(ServletConfig config):初始化
+				void service(ServletRequest request,ServletResponse response):服务 处理业务逻辑
+				void destory():销毁
+				ServletConfig getServletConfig():获取当前servlet的配置对象
+			GenericServlet常用方法：
+				除了service方法没有实现，其他都实现
+				空参的init() 若我们自己想对servlet进行初始化操作，重写这个init()方法即可
+			HttpServlet常用方法：
+				service做了实现，把参数强转，调用了重载的service方法
+					重载的service方法获取请求的方式，根据请求方式的不同，调用响应的doxxx方法
+				doGet和doPost方法
+				
+		servlet生命周期(***):
+			void init(ServletConfig config):初始化
+			//初始化方法
+			//执行者：服务器
+			//执行次数：一次
+			//执行时机：默认第一次访问的时候
+			void service(ServletRequest request,ServletResponse response):服务 处理业务逻辑
+			//服务方法
+			//执行者：服务器
+			//执行次数：请求一次执行一次
+			//执行时机：请求来的时候	
+			void destory():销毁
+			//销毁方法
+			//执行者：服务器
+			//执行次数：只执行一次
+			//执行时机：当servlet被移除或者服务器正常关闭的时候(重新部署或者stop服务器)
+			
+			servlet是一个单实例多线程
+			默认第一次访问的时候，服务器创建servlet，调用init方法实现初始化操作，并调用一次service方法
+			每当请求来的时候，服务器都会创建一个线程，调用service方法执行自己的业务逻辑
+			当servlet被移除的时候或者服务器正常关闭的时候，服务器调用servlet的destroy方法实现销毁操作
+			
+		url-pattern的配置：
+			【完全路径匹配】
+			* 以/开头  如:/aaa /aaa/bbb
+			【目录匹配】
+			* 以/开头 以*结尾  如:/* /aaa/* /aaa/bbb/*
+			【扩展名匹配】
+			* 不能以/开始的 需要以*开始   如：*.jsp  *.do  *.action
+			
+			完全路径匹配 > 目录匹配 > 扩展名匹配
+			
+			练习:
+			有如下的一些映射关系：
+			    Servlet1 映射到 /abc/* 
+			    Servlet2 映射到 /*
+			    Servlet3 映射到 /abc 
+			    Servlet4 映射到 *.do 
+			问题:
+			当请求URL为“/abc/a.html”，“/abc/*”和“/*”都匹配，哪个servlet响应
+				Servlet引擎将调用Servlet1。
+			当请求URL为“/abc”时，“/*”和“/abc”都匹配，哪个servlet响应
+				Servlet引擎将调用Servlet3。
+			当请求URL为“/abc/a.do”时，“/abc/*”和“*.do”都匹配，哪个servlet响应
+				Servlet引擎将调用Servlet1。
+			当请求URL为“/a.do”时，“/*”和“*.do”都匹配，哪个servlet响应
+				Servlet引擎将调用Servlet2.
+			当请求URL为“/xxx/yyy/a.do”时，“/*”和“*.do”都匹配，哪个servlet响应
+				Servlet引擎将调用Servlet2。
+		
+			一个路径对应一个servlet，一个servlet可以对应多个路径
+		
+		在servlet标签下有一个子标签 load-on-startup
+			作用：用来修改servlet的初始化时机
+			取值：正整数 值越大优先级越低
+		当我们的配置文件里没有指定配置的话，会查找tomcat的web.xml
+			若请求我们自己的项目处理不了，tomcat的默认servlet会帮我们处理
+			  <servlet>
+			        <servlet-name>default</servlet-name>
+			        <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
+			        <init-param>
+			            <param-name>debug</param-name>
+			            <param-value>0</param-value>
+			        </init-param>
+			        <init-param>
+			            <param-name>listings</param-name>
+			            <param-value>false</param-value>
+			        </init-param>
+			        <load-on-startup>1</load-on-startup>
+			    </servlet>
+		       <servlet>
+			        <servlet-name>jsp</servlet-name>
+			        <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
+			        <init-param>
+			            <param-name>fork</param-name>
+			            <param-value>false</param-value>
+			        </init-param>
+			        <init-param>
+			            <param-name>xpoweredBy</param-name>
+			            <param-value>false</param-value>
+			        </init-param>
+			        <load-on-startup>3</load-on-startup>
+			    </servlet>
+			        <!-- The mapping for the default servlet -->
+			    <servlet-mapping>
+			        <servlet-name>default</servlet-name>
+			        <url-pattern>/</url-pattern>
+			    </servlet-mapping>
+			
+			    <!-- The mappings for the JSP servlet -->
+			    <servlet-mapping>
+			        <servlet-name>jsp</servlet-name>
+			        <url-pattern>*.jsp</url-pattern>
+			        <url-pattern>*.jspx</url-pattern>
+			    </servlet-mapping>
+			tomcat中默认会访问：
+				<welcome-file-list>
+				<welcome-file>index.html</welcome-file>	
+				<welcome-file>index.htm</welcome-file>
+				<welcome-file>index.jsp</welcome-file>
+				</welcome-file-list>
+		路径的写法：
+			相对路径：
+				当前路径 ./或者什么都不写
+				上一级路径 ../
+			绝对路径：
+				带主机和协议的绝对路径(访问站外资源)
+					http://localhost:8080/day09/hello
+				不带主机和协议的绝对路径(访问站内资源)
+					/day09/hello(经常使用)
+					
+		案例2-当我们登录失败的时候 提示用户名和密码不匹配 3s后跳转到登录页面
+			技术分析：
+				定时刷新
+			常见的响应头-refresh
+				格式：
+					refresh:秒数;url=跳转的路径
+				设置响应头：
+					response.setHeader(String key,String value); 设置字符串形式的响应头
+					response.addHeader(String key,String value); 追加响应头，若之前设置过这个头，则追加；若没有设置过，则设置
+				设置定时刷新：
+					response.setHeader("refresh","3;url=/day09/login.htm");
+			步骤分析：
+				登录失败之后，修改业务逻辑
+					打印之后添加一个头信息即可
+		案例3-统计登录成功的总人次
+			需求：
+				在一个用户登录成功之后，需要获取之前登录成功的总人次，将次数加一，在访问另一个servlet的时候，显示登录成功的总人次
+			技术分析：
+				ServletContext
+					上下文(全局管理者)
+					获取全局管理者：
+						(this.)getServletContext();
+					常用的方法：
+						setAttribute(String key,Object value);//设置值
+						Object getAttribute(String key);//获取值
+						removeAttribute(String key);//移除值
+			步骤分析：
+				1.在项目启动的时候，初始化登录次数
+					在loginServlet的init()方法中获取全局管理者，将值初始化为0，放入ServletContext里
+				2.登录成功之后，在loginservlet中获取全局管理者，获取登录成功的总次数
+				3.然后将次数加一，然后将值设置回去
+				4.当访问showServlet的时候，获取全局管理者，获取登录成功的总次数，然后在页面上打印出来即可
+		
+		ServletConfig(了解):
+			Servlet配置对象
+				作用：
+					1.获取当前servlet名称
+					2.获取当前servlet的初始化参数
+					3.获取全局管理者
+				方法：
+					String getServletName()：获取当前servlet名称(web.xml配置的servlet-name)
+					getInitParameter(String name)：通过名称获取指定的参数值
+					Enumeration getInitParameterNames()：获取所有的参数名称
+						初始化参数放在web.xml文件
+							servlet标签下子标签 init-param
+					getServletContext()：获取全局管理者
+				ServletConfig是由服务器创建的，在创建servlet的同时也创建了它，
+					通过servlet的init(ServletConfig config)将config对象传递给servlet，
+					由Servlet的getServletConfig方法获取
+		ServletContext(理解):
+			上下文(全局管理者)
+			一个项目的引用，代表了当前项目
+			当项目启动的时候，服务器为每一个web项目创建一个servletcontext对象
+			当项目被移除的时候或者服务器关闭的时候，servletcontext对象销毁
+			作用：
+				1.获取全局的初始化参数
+				2.共享资源(xxxAttribute)
+				3.获取文件资源
+				4.其他操作
+			获取servletcontext：
+				方法一：了解
+					getServletConfig.getServletContext()
+				方法2：
+					getServletContext()
+					 @Override
+				    public ServletContext getServletContext() {
+				        return getServletConfig().getServletContext();
+				    }
+			常用方法：
+				1.了解
+					getInitParameter(String name)：通过名称获取指定的参数值
+					Enumeration getInitParameterNames()：获取所有的参数名称
+						在根标签下有一个 context-param子标签 用来存放初始化参数
+						<context-param>
+						  	<param-name>encoding</param-name>
+						  	<param-value>utf-8</param-value>
+						 </context-param>
+				2.xxxAttribute
+				3.
+					String getRealPath(String path)：获取文件部署到tomcat上的真实路径(带tomcat路径)
+						getRealPath("\")：D:\apache-tomcat-7.0.106\webapps\day0901\
+						getRealPath("\1.txt")：D:\apache-tomcat-7.0.106\webapps\day0901\1.txt
+					getResourceAsStream(String path)：以流的形式返回一个文件
+						java.io.ByteArrayInputStream@3f61cb8d
+						不存在返回null
+				4.获取文件的mime类型	大类型/小类型
+					String getMimeType(String 文件名称)
+						context.getMimeType("1.jpg")：image/jpeg(根据后缀名)
+					tomcat->conf->web.xml：
+					    <mime-mapping>
+					        <extension>jpg</extension>
+					        <mime-type>image/jpeg</mime-type>
+					    </mime-mapping>
+		域对象(***)：
+			ServletContext
+				当成map集合
+					常用方法：
+						xxxAttribute()
+			ServletContext创建和销毁：
+				当项目启动的时候，服务器为每一个web项目创建一个ServletContext对象
+				当项目被移除的时候或者服务器关闭的时候ServletContext销毁
+			存放：
+				共享的数据
+		获取文件的路径：
+			通过类加载器获取文件：123.txt放在classes目录下
+			String pt=PathServlet.class.getClassLoader().getResource("123.txt").getPath();
+			System.out.println("pt："+pt);//pt：/D:/apache-tomcat-7.0.106/webapps/day0901/WEB-INF/classes/123.txt
+			String pt1=PathServlet.class.getClassLoader().getResource("123.txt").getPath();
+			System.out.println("pt1："+pt1);//pt1：/D:/apache-tomcat-7.0.106/webapps/day0901/WEB-INF/classes/123.txt
+			
+
+-->

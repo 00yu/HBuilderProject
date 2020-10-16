@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script>
+			function btncli(){
+				alert(44944);
+			}
+			function init(){
+				alert("页面加载成功");
+			}
+			var btn2cli=function(){
+				alert("244944");
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		<input type="button" value="单击我试试" onclick="btncli()">
+		<input type="button" value="点我试试2" id="btn2">
+	</body>
+	<script>
+		document.getElementById("btn2").onclick=btn2cli;
+		//或者放在init()函数中，因为加载成功则知道id
+	</script>
+</html>

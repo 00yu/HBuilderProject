@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		用户名：<input name="" value="tom" onfocus="getFocus()" onblur="loseFocus()" id="username"/><br />
+		<span id="spanid"></span>
+	</body>
+	<script>
+		//得到焦点
+		function getFocus(){
+			var user=document.getElementById("username");
+			//给span填写文本框内容
+			document.getElementById("spanid").innerHTML=user.value;
+		}
+		//失去焦点时候将它的内容弹出来
+		function loseFocus(){
+			var user=document.getElementById("username");
+			alert(user.value);
+		}
+	</script>
+</html>

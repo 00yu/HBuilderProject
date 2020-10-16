@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<script>
+		function checkForm(){
+			var flag=true;
+			//获取用户名和密码
+			var usernameValue=document.getElementById("username").value;
+			var passwordValue=document.getElementById("password").value;
+			if(usernameValue==null || usernameValue==""){
+				//若为空，在span中添加错误信息
+				var username_msgObj=document.getElementById("username_msg");
+				//username_msgObj.innerHTML="用户名不能为空";
+				username_msgObj.innerHTML="<font color='red'>用户名不能为空</font>"
+				flag=false;
+			}
+			else{
+				var username_msgObj=document.getElementById("username_msg");
+				username_msgObj.innerHTML=""
+			}
+			if(passwordValue==null || passwordValue==""){
+				//若为空，在span中添加错误信息
+				var password_msgObj=document.getElementById("password_msg");
+				password_msgObj.innerHTML="密码不能为空";
+				password_msgObj.style.color="red";
+				flag=false;
+			}
+			else{
+				var password_msgObj=document.getElementById("password_msg");
+				password_msgObj.innerHTML="";
+			}
+			return flag;
+		}
+		//方式一
+//		function loseFocus(){
+//			//获取标签内容
+//			var usernameValue=document.getElementById("username").value;
+//			//判断值不满足给相应的span设置内容
+//			if(usernameValue==null || usernameValue==""){
+//				document.getElementById("username_msg").innerHTML="<font color='red'>用户名不能为空</font>";
+//			}
+//			else{
+//				document.getElementById("username_msg").innerHTML="";
+//			}
+//		}
+		//方式2(在方法中(function()) this指代的是当前的元素(当前dom对象))
+		function loseFocus(obj){
+			
+		}
+
+		
+	</script>
+	<!--
+    	需求：
+    		提示信息不用弹出框，将信息追加在文本框后面
+    	技术分析：
+    		确定事件 表单提交的时候 onsubmit
+    				文本框失去焦点的时候 onblur 得到焦点onfocus
+    		编写函数
+    		获取元素
+    			document.getElementById("id值");
+    		操作元素(获取元素的值，操作标签体，操作标签的value属性)
+    	步骤分析：
+    		1.表单
+    		2.表单提交的时候 确定事件 onsubmit()
+    		3.校验用户名和密码
+    		4.获取用户名和密码的对象及值
+    		5.判断内容，当为空的时候，获取相应的span元素
+    			往span元素中显示错误信息
+    -->
+	<body>
+		<form action="#" method="get" onsubmit="return checkForm()">
+			<table width="60%" height="60%"  align="center" bgcolor="#ffffff">
+				<tr>
+					<td colspan="3">会员注册USER REGISTER</td>
+				</tr>
+				<tr>
+					<td width="20%">用户名:</td>
+					<td width="40%"><input type="text" name="username" id="username" onblur="loseFocus(this)"></td>
+					<td width="40%"><span id="username_msg"></span></td>
+				</tr>
+				<tr>
+					<td>密码:</td>
+					<td><input type="password" name="password" id="password"></td>
+					<td><span id="password_msg"></span></td>
+				</tr>
+				<tr>
+					<td>确认密码:</td>
+					<td><input type="password" name="repassword" id="repassword"></td>
+					<td><span id="repassword_msg"></span></td>
+				</tr>
+				<tr>
+					<td>Email:</td>
+					<td><input type="text" name="email" id="email"></td>
+					<td><span id="email_msg"></span></td>
+				</tr>
+				<tr>
+					<td>姓名:</td>
+					<td><input type="text" name="name"></td>
+				</tr>
+				<tr>
+					<td>性别:</td>
+					<td>
+						<input type="radio" name="sex" value="男"> 男
+						<input type="radio" name="sex" value="女" />女
+					</td>
+				</tr>
+				<tr>
+					<td>出生日期</td>
+					<td>
+						<input type="text" name="birthday">
+
+					</td>
+				</tr>
+				<tr>
+					<td>验证码</td>
+					<td>
+						<input type="text" name="checkcode">
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<input type="submit" value="注册" />
+					</td>
+				</tr>
+			</table>
+		</form>
+	</body>
+</html>

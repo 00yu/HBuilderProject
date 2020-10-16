@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--
+			需求：
+				每隔3s图片更新一下
+        	技术分析：
+        		BOM中window对象的定时器方法
+        	定时器：
+        		var id=setInterVal(code,毫秒数):每隔指定的毫秒数执行一次函数 周期
+        		var id=setTimeout(code,毫秒数):延迟指定的毫秒数之后 只执行一次函数
+        	清除定时器：
+        		clearInterval(id);
+        		clearTimeout(id);
+        		
+        String对象
+        	原始类型的String是一个为对象可以直接调用String类对象的方法
+        	substring(0,endIndex);
+        -->
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<!--页面加载以后轮播图片-->
+	<body onload="init()">
+		<table border="1" width="100%">
+			<!--
+            	转义字符
+            		不断行的空格 &nbsp;
+            		小于 &lt; less than
+            		大于 &gt; great than
+            		&符号 &amp;
+            	meta
+            		元信息标签
+            		<meta charset="UTF-8">指定浏览器用什么编码打开此页面
+            -->
+			<!--8行1列-->
+			<!--logo
+				一行三列表格
+			-->
+			<tr>
+				<td>
+					<table width="100%">
+						<tr>
+							<td>
+								<img src="img/logo2.png" height="40px"/>
+							</td>
+							<td align="center">
+								<img src="img/header.jpg"/>
+							</td>
+							<td align="right">
+								<a href="#">登录</a>
+								<a href="#">注册</a>
+								<a href="#">购物车</a>&nbsp;&nbsp;&nbsp;
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<!--
+				菜单
+			-->
+			<tr>
+				<td bgcolor="black" height="40px">
+					&nbsp;<a href="#"><font color="white" size="4">首页</font></a>&nbsp;
+					&nbsp;<a href="#"><font color="white" size="4">首页</font></a>&nbsp;
+					&nbsp;<a href="#"><font color="white" size="4">首页</font></a>&nbsp;
+					&nbsp;<a href="#"><font color="white" size="4">首页</font></a>&nbsp;
+				</td>
+			</tr>
+			<!--
+				轮播图
+			-->
+			<tr>
+				<td>
+					<img id="lunbo" src="img/1.jpg" width="100%" />
+				</td>
+			</tr>
+			<!--
+				热门商品 嵌套两行七列表格
+			-->
+			<tr>
+				<td>
+					<font size="6" face="黑体">热门商品</font>
+					<img src="img/title2.jpg" />
+					<table width="100%">
+						<tr>
+							<td rowspan="2">
+								<img src="img/big01.jpg"/>
+							</td>
+							<td colspan="3">
+								<img src="img/middle01.jpg"/>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td><td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<!--
+				广告图片 
+			-->
+			<tr>
+				<td>
+					<img src="img/ad.jpg" width="100%"/>
+				</td>
+			</tr>
+			<!--
+				最新商品 嵌套两行七列表格
+			-->
+			<tr>
+				<td>
+					<font size="6" face="黑体">最新商品</font>
+					<img src="img/title2.jpg" />
+					<table width="100%">
+						<tr>
+							<td rowspan="2">
+								<img src="img/big01.jpg"/>
+							</td>
+							<td colspan="3">
+								<img src="img/middle01.jpg"/>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td><td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+							<td>
+								<img src="img/small08.jpg"/>
+								<p align="center"><a href="#">电饭煲</a></p>
+								<p align="center">200</p>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<!--
+				正品保障 一张图片
+			-->
+			<tr>
+				<td>
+					<img src="img/footer.jpg" width="100%"/>
+				</td>
+			</tr>
+			<!--
+				版权信息 两个段落
+			-->
+			<tr>
+				<td>
+					<p align="center">
+						<a href="#">关于我们</a>
+						<a href="#">关于我们</a>
+						<a href="#">关于我们</a>
+						<a href="#">关于我们</a>
+						<a href="#">关于我们</a>
+					</p>
+					<p align="center">
+						Copyright &copy; 版权所有
+					</p>
+				</td>
+			</tr>
+		</table>
+	</body>
+	<script>
+		var i=1;
+		function init(){
+			//创建一个定时器
+			setInterval(changeImage,1000);
+		}
+		//更改图片
+		function changeImage(){
+			//获取图片元素
+			var imgObj=document.getElementById("lunbo");
+			i++;
+			//修改图片src属性
+			imgObj.src="img/"+i+".jpg";
+			if(i>=3){
+				i=0;
+			}
+		}
+	</script>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body onload="init()" id="bo">
+	</body>
+	<script>
+		var s="我们的明天更加美好！";
+			var i=0;
+			var bodyObj=document.getElementById("bo");
+			function init(){
+				//document.write(s);
+				setInterval(show,200);
+			}
+		function show(){
+				//初始化标签体的内容
+				i++;
+				var s_=s.substring(0,i);
+				bodyObj.innerHTML=s_;
+				//字符串写完重新开始
+				if(i==s.length){
+					i=0;
+				}
+			}
+	</script>
+</html>

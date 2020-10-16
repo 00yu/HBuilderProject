@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--
+        	一个元素外面有padding(内边距) border(边框) margin(外边距)
+        	padding:元素和边框的距离
+        	margin:元素最外层的空白
+        	上面这三个属性都有简写的属性
+        		若设置大小的时候 四个值顺序:上右下左(没有写找对面的)
+        			padding:10px 10px 10px 10px
+        			padding:10px 20px(下面找上面为10px，左边找右边20px)
+        			padding:10px 20px 30px(左边找右边20px)
+        	border:边框
+        		简写属性
+        			border:宽度 风格 颜色
+        			solid:实线 dashed:虚线 double:双实线
+        -->
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+			body{
+				margin: 0px;
+			}
+			div{
+				background-color: #ff0;
+				width: 150px;
+				height: 150px;
+				float: left;
+				border: 1px solid red;
+				margin: 50px;
+				padding: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<div>123</div>
+		<div></div>
+	</body>
+</html>

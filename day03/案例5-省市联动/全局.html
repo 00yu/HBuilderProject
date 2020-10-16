@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script>
+			var s="http://www.itheima.com/你好/1.html";
+			document.write(encodeURI(s)+"<br />");
+			var s_="http://www.itheima.com/%E4%BD%A0%E5%A5%BD/1.html";
+			document.write(decodeURI(s_));
+			var i="9.9";
+			alert(parseInt(i));//9
+			alert(parseFloat(i));//9.9
+			var i="9.9超市"
+			alert(parseInt(i));//9
+			alert(parseFloat(i));//9.9
+			var i="超市9.9"
+			alert(parseInt(i));//NAN
+			alert(parseFloat(i));//NAN
+			s="alert('hello')";
+			eval(s);
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
