@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	</body>
+</html>
+<!--
+	案例1：在页面中展示所有商品信息，不要使用jsp脚本
+	技术分析：
+		jsp/el/jstl
+	jsp:
+		java服务器页面
+		作用：
+			将内容的生成(java)和信息的展示(html)相分离
+		运行在服务器端，本质上就是一个servlet，产生的java文件和class保留在tomcat的work目录下
+	jsp脚本：
+		<%...%>java代码片段
+		<%=...%>输出表达式 相当于out.print();
+		<%!...%>声明成员
+	jsp的指令
+		作用：声明jsp页面的一些属性和动作
+		格式：
+			<%@指令名称 属性="值"%>
+		jsp指令的分类：
+			page:主要声明jsp页面的一些属性
+				重要属性：3个
+					contentType:设置响应流的编码以及通知浏览器用什么编码打开，设置文件的mime类型
+					pageEncoding:设置页面的编码
+					import:导入所需要的包
+					contentType和pageEncoding联系：
+						若两者都出现的时候，各自使用各自的编码
+						若只出现一者，两者都使用出现的这个编码
+						若两者都不出现，使用服务器默认的编码 tomcat7使用的是iso-8859-1(不支持中文)
+				了解属性：
+					language:当前jsp页面里面可以嵌套的语言
+					buffer:设置jsp页面流的缓冲区大小
+					autoFlush:是否自动刷新
+					extends:声明当前jsp页面继承于哪个类 必须继承的是httpservlet及其子类
+					session:设置jsp页面中是否可以使用session这一内置对象
+					isELIgnored:是否忽略el表达式
+					errorPage:当前jsp页面出现异常的时候要跳转到的jsp页面
+					isErrorPage:当前jsp页面是否是个错误页面
+						若值为true，可以使用jsp页面的一个内置对象 exception
+			include:静态包含
+				就是将其他页面或者servlet的内容包含进来，一起进行编译运行，生成一个java文件
+				例如：
+					<%@include file="相对路径/内部的绝对路径(不带协议和主机的绝对路径去掉项目名 请求转发 静态包含 动态包含)"%>
+			taglib:导入标签库
+				格式：
+					<%@taglib prefix="前缀名" uri="名称空间"%>
+				若导入之后
+					<前缀名:标签..>
+				例如：
+					<c:if test="true/false">若为true输出内容</c:if>
+		注意：
+			一个页面中可以出现多个指令
+			指令可以放在任意位置，一般都放在jsp页面最上面
+	jsp的内置对象☆☆☆☆☆☆(9个内置对象)
+		在jsp页面上可以直接使用的对象
+			内置对象			类型
+			out				JSPWriter
+			request			HttpServletRequest
+			response		HttpServletResponse
+			session			HttpSession
+			exception		Throwable
+			page			Servlet(this)
+			config			ServletConfig
+			application		ServletContext
+			pageContext		PageContext
+	jsp的域对象(范围由大到小)
+		application			整个项目
+		session				一次会话
+		request				一次请求
+		pageContext			一个页面
+	pageContext作用(理解)：
+		1.域对象
+			xxxAttribute();
+		2.操作其他域对象
+			方法：
+				xxxAttribute(...,int scope);
+					scope取值：
+						APPLICATION_SCOPE
+						SESSION_SCOPE
+						REQUEST_SCOPE
+						PAGE_SCOPE
+		3.获取其他的内置对象
+			方法：
+				getxxx()
+			注意：
+				getRequest():获取request的内置对象
+		4.便捷查找
+			findAttribute(String key):
+				依次从pagecontext,request,session,application四个域中，查找相应的属性
+				若查找到了返回值，并结束该次查找(从小向大)
+				若查找不到，返回一个null
+	jsp的动作标签
+		<jsp:forward>:请求转发 相当于java中request.getRequestDispatcher().forward(...);
+		<jsp:include>:动态包含 就是将被包含页面或者servlet的运行结果包含到当前页面中(与静态包含结果一样，但会生成多个文件)
+	
+	el:
+		jsp的内置表达式语言，从jsp2.0开始
+		用来替代<%=...%>
+		作用：
+			1.获取域中数据☆
+			2.执行运算☆
+			3.获取常见的web对象
+			4.调用java的方法
+		格式：
+			${el表达式}
+		
+		获取域中数据：
+			注意：☆
+				若属性名中出现了"."|"+"|"-"等特殊符号，需要使用scope获取
+					例如：
+						${requestScope["arr.age"]}
+			获取简单数据：
+				${pageScope|requestScope|sessionScope|applicationScope.属性名}
+				以后经常使用：
+					${属性名}：依次从pageContext,request,session,application查找指定属性，若查找到指定值，结束该次查找
+						若查找不到，返回""
+			获取复杂数据：
+				获取数组中的数据：${域中的名称[index]}
+				获取list中的数据：${域中的名称[index]}
+				获取map中的数据：${域中的名称.键名}
+			javabean导航
+				javabean:
+					java语言编写的一个可重用组件，
+					狭义上来说就是我们编写的一个普通的java类 例如：User Person
+					javabean规范：
+						1.必须是一个公共的具体的类 public class
+						2.提供私有的字段 private String id;//id称之为字段
+						3.提供公共访问字段的方法 get|set|is方法
+							public String getId(){...}
+							一旦有公共的方法之后，get|set|is之后的内容，将首字母小写，将这个东西称之为bean属性
+								id就是一个bean属性
+						4.提供一个无参的构造器
+						5.一般实现序列化接口 serializable
+				${域中javabean名称.bean属性}
+		
+		执行运算：
+			四则运算 关系(>...) 逻辑(&& ||)
+			注意：
+				+：只能进行加法运算，字符串形式的数字可以进行加法运算，不能进行拼接字符串
+				empty：判断一个容器的长度是否为0(array set list map)，还可以判断一个对象是否为空
+					${empty 域中的对象名称}
+				三元运算符
+					${3>4?"yes":"no"}
+		el的内置对象(了解)：
+			11个
+				pageScope
+				requestScope
+				sessionScope
+				applicationScope
+				
+				param
+				paramValues
+				
+				header
+				headerValues
+				
+				initParam
+				
+				cookie☆
+				pageContext☆
+			注意：
+				除了pageContext其余对象获取的全是map集合
+			了解：和参数相关的el内置对象
+				param：map集合<key,value> ${param.username}
+				paramValues：map集合<key,String[]> ${paramValues.hobby[0]}
+			了解：和请求头相关的el内置对象
+				header
+				headerValues
+			了解：和全局的初始化参数相关的el内置对象(web.xml配置参数)
+				initParam
+			cookie内置对象：
+				${cookie} 获取map{key=Cookie}
+					例如：创建cookie
+						Cookie c=new Cookie("username","tom");
+					通过${cookie}获取
+						{username=c}
+					相当于map的key是cookie的键，map的value是当前cookie
+				若想获取名称为username的cookie的value值(获取tom)
+					${cookie.username.value}
+				注意：
+					java中cookie的api
+						getName():获取cookie的名称
+						getValue():获取cookie的value值
+					我们称name和value是cookie的bean属性
+				使用cookie内置对象：
+					${cookie.给cookie起的名字.value}
+				例如：
+					获取jsession的值
+					${cookie.JSESSIONID.value}
+			pageContext:获取不是map集合，相当于jsp的pageContext内置对象
+				在jsp页面中获取项目名
+				${pageContext.request.contextPath}
+				
+		jsp注释(ctrl+shift+/)：
+			html注释 <!-- -->
+				注释的内容只在页面上看不到 java代码和html源代码都有
+			java注释
+				只在java代码中存在
+			jsp注释 <%-- --%>
+				只在jsp页面中存在，翻译成java文件之后就没有了
+				
+	jstl:
+		jsp标准的标签库语言
+		apache的 
+		用来替代java脚本
+		使用步骤：
+			1.导入jar包(taglibs-standard-impl.jar和taglibs-standard-spec.jar)
+			2.在页面上导入标签库
+				<%@taglib prefix="" uri=""%>
+				<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+		jstl的分类：
+			core:核心类库☆
+			fmt:格式化|国际化
+			xml:过时了
+			sql:过时了
+			函数库:很少使用
+		core:掌握
+			c:if☆ 判断
+				<c:if test="${el表达式}">满足的时候输出内容</c:if>
+				例如：
+					<c:if test="${3>4}">
+						3大于4
+					</c:if>
+					<c:if test="${3<=4}">
+						3不大于4
+					</c:if>
+			c:foreach☆ 循环
+				基础用法：输出1-10
+					<c:forEach begin="1" end="10" step="1" var="i">
+						${i }
+					</c:forEach>
+					记录循环状态变量
+						常用属性：
+							count:记录次数
+							current:记录当前遍历的内容
+					<c:forEach begin="1" end="20" step="2" var="i" varStatus="vs">
+						${i }--${vs.count }--${vs.current }<br>
+					</c:forEach>
+				高级用法：
+					<c:forEach items="${list }" var="n">
+						${n }
+					</c:forEach>
+					<hr>
+					<c:forEach items="${set }" var="n" varStatus="vs">
+						${n }==${vs.count }
+					</c:forEach>
+					<hr>
+					<c:forEach items="${map }" var="n">
+						${n.key }--${n.value }
+					</c:forEach>
+			c:set 往域中设置值
+			c:choose c:when c:otherwise 分支
+		扩展：函数库
+			例如：${fn:toUpperCase("hello") }
+			
+	案例1-展示所有商品
+		步骤分析：
+			1.数据库和表
+				create database day12;
+				use day12;
+				create table product(
+					id int primary key auto_increment,
+					pname varchar(20),
+					price double,
+					pdesc varchar(20)
+				);
+				
+				insert into product values (null,'电视机',3200,'液晶曲面大电视');
+				insert into product values (null,'韭菜盒子',3,'味重请小心食用');
+				insert into product values (null,'益达',10,'韭菜伴侣');
+				insert into product values (null,'十三香',12,'守义牌');
+				
+				新建一个项目
+					导入jar包：
+						驱动 dbutils c3p0 jstl
+					导入c3p0配置文件和工具类
+					实体类：
+						实体bean
+						private int id;
+						private String pname;
+						private double price;
+						private String pdesc;
+
+			2.index.jsp中添加一个链接
+				<a href="/day1201/findAll">展示所有商品</a>
+			3.FindAllServlet：
+				调用ProductService.findAll() 返回一个结合 List<Product>
+				将list放入request域中
+				请求转发到product_list.jsp
+			4.ProductService.findAll() 调用dao.findAll()
+			5.dao.findAll() 使用beanListHandler()
+			6.在product_list.jsp展示所有商品
+				使用 c:forEach
+				使用javabean导航获取里面的数据
+	
+	案例2-重写登录案例
+		需求：
+			在页面上填写用户名和密码及验证码，点击提交，先校验验证码是否一致
+				若一致后，再去查找数据库，顺便记住用户名
+		技术：
+			表单 
+			验证码
+			servlet
+			request
+			session
+			cookie
+		步骤分析：
+			1.数据库和表
+				create table user(
+					id int primary key auto_increment,
+					username varchar(20),
+					password varchar(20)
+				);
+			2.创建一个项目
+				包结构
+				jar包
+				工具类和配置文件
+			3.表单 login.jsp
+			4.表单提交 loginServlet
+				loginServlet:
+					获取验证码(用户输入验证码和session中)
+						判断两个验证码是否一致
+							若不一致：
+								填写错误信息，请求转发到login.jsp
+							若一致：
+								获取用户名和密码
+									调用userService的getuserbyusernameandpassword()返回值user
+									判断user是否为空
+										若为空：填写错误信息，请求转发到login.jsp
+										若不为空：
+											继续判断是否勾选了记住用户名
+												若勾选：
+													创建cookie 将用户名放入cookie写回浏览器
+											将user对象放入session中
+											页面重定向 index.jsp 展示xxx:欢迎回来
+			
+-->

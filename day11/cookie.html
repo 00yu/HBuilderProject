@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	</body>
+</html>
+<!--
+	案例1-记录用户上次访问时间
+	需求：
+		当用户第一次登陆的时候，提示：你是第一次访问，且记录该次的访问时间，
+		下一次访问的时候，获取上一次访问时间并展示出来
+	技术分析：
+		会话技术
+		cookie
+		jsp
+		
+	jsp:
+		java server pages(java服务器页面)
+		本质上jsp就是一个servlet,在html代码中嵌套java代码
+		运行在服务器端，可以处理请求，生成动态内容
+		对应的java和class文件在tomcat目录下的work目录
+		后缀名 .jsp
+		
+		执行流程：
+			1.浏览器发送请求，访问jsp页面
+			2.服务器接收请求，jspServlet会帮我们查找对应的jsp文件
+			3.服务器将jsp页面翻译成.java文件
+			4.jvm会将java文件编译成.class文件
+			5.服务器运行class文件，生成动态内容
+			6.将内容发送给服务器
+			7.服务器组装成响应信息，发送给浏览器
+			8.浏览器接收数据，解析展示
+			
+		jsp脚本：
+			<%...%>java程序片段
+				生成在jsp的service方法中
+			<%=...%>输出表达式
+				相当于<%out.print(...);%>
+			<%!...%>声明成员
+				生成在成员位置上在service方法之前，可以写在调用前因为调用在service方法中
+		
+	会话技术：
+		当用户打开浏览器的时候，访问不同的资源，直到用户将浏览器关闭，可以认为这是一次会话
+		作用：
+			因为http协议是一个无状态的协议，记录不了上次访问的内容，用户在访问过程中难免会产生一些数据
+			通过会话技术就可以将其保存起来
+			例如：
+				用户登录
+				验证码
+				购物车
+				访问记录
+				....
+		分类：
+			cookie:浏览器端会话技术
+			session:服务器端会话技术
+		cookie:
+			小饼干 小甜点
+			cookie是由服务器生成，通过response将cookie写回浏览器(set-cookie)，保留在浏览器上
+			下一次访问，浏览器要根据一定的规则携带不同的cookie(通过request的头cookie),我们的服务器可以接收cookie
+			Cookie的api:
+				new Cookie(String key,String value)
+			写回浏览器:
+				response.addCookie(Cookie c)
+			获取cookie:
+				Cookie[] request.getCookies()
+			cookie的常用方法：
+				getName():获取cookie的key(名称)
+				getValue:获取指定cookie的值
+		案例1-步骤分析：
+			1.创建一个servlet RemServlet 路径:/rem
+			2.在servlet中：
+				获取指定cookie 例如：名称为lastTime
+					request.getCookies()
+				判断cookie是否为空
+					若为空：提示信息 第一次访问
+					若不为空：
+						获取此cookie的value
+						展示信息：你上次访问时间是...
+				将这次的访问时间记录，写回浏览器
+		cookie总结：
+			常用方法：
+				setMaxAge(int 秒)：设置cookie在浏览器端存活时间 以秒为单位
+					若设置成0：删除该cookie(前提：必须路径一致)
+				setPath(String path)：设置cookie的路径
+					当我们访问的路径中包含此cookie的path，则携带
+					默认路径：
+						访问servlet的路径，从"/项目名称"开始，到最后一个"/"结束
+						例如：
+							访问的servlet路径：
+								/day11/a/b/hello
+							默认路径：
+								/day11/a/b
+					手动设置路径：以"/项目名"开始，以"/"结尾
+	案例2-记录用户浏览历史
+	需求：
+		当用户访问一个商品的时候，需要将该商品保留在浏览记录中
+	技术分析：
+		cookie
+	步骤分析：
+		1.先将product_list.htm转成jsp
+		2.点击一个商品，展示该商品的信息，将该商品id记录到cookie中 (GetProductById)
+			获取之前的浏览记录 例如名称：ids
+				判断ids是否为空
+					若为空
+						将当前商品的id放入ids
+					若不为空
+						获取值 ids=2-1 当前访问的id=1 使用"-"分隔商品id
+							判断之前历史记录中有无该商品
+								若有：将当前id放到前面 结果 ids=1-2
+								若没有：
+									继续判断ids中商品长度是否>=3
+										若>=3移除最后一个，将当前id放到最前面
+										若<3直接将当前id放到最前面
+		3.再次回到product_list.jsp页面，需要将之前访问的商品展示在浏览记录中
+			获取ids 例如：ids=2-3-1
+			切割
+	
+	扩展：删除浏览记录
+	技术分析：
+		cookie.setMaxAge(0)
+	步骤分析：
+		1.在浏览记录中添加一个超链接
+			<a href="/day1101/clearHistory">清空</a>
+		2.创建servlet clearHistory
+			创建一个cookie
+				名称路径保持一致
+				setMaxAge(0)
+			写回浏览器
+		3.页面跳转
+			重定向到product_list.jsp
+	注意：
+		cookie不能跨浏览器
+		cookie中不支持中文
+		
+	案例3-添加到购物车
+	需求：
+		在商品详情页面有一个添加到购物车，点击则将该商品添加到购物车，点击购物车链接，将里面的所有商品展示出来
+	技术分析：
+		session
+	
+	session:
+		服务器端会话技术
+		当我们第一次访问服务器的时候，服务器获取id(jsessionid)，
+			能获取id
+				要拿着id去服务器中查找有无此session
+					若查找到：直接拿过来使用，将数据保存，还需要将当前session的id返回给你
+					若查找不到：创建一个session，将你的数据保存到这个session中，将当前session的id返回给浏览器
+			不能获取id
+				创建一个session，将你的数据保存到这个session中，将当前session的id返回给浏览器
+		获取一个session：
+			HttpSession request.getSession()：获取一个session
+		域对象：
+			xxxAtrribute
+			生命周期：
+				创建：第一次调用request.getSession()
+				销毁：
+					1.服务器非正常关闭
+					2.Session超时
+						默认时间超时：30分钟 web.xml中有配置 
+						手动设置超时：setMaxInactiveInterval(int interval) 了解
+					3.手动干掉session(退出登录)
+						session.invalidate()
+			存放的私有的数据(一个浏览器一个)
+		步骤分析：
+			1.点击添加到购物车的时候，提交到一个servlet add2CartServlet
+				需要将商品名称携带过去
+			2.add2CartServlet中的操作
+				获取商品的名称
+				将商品添加到购物车 购物车结构 Map<String 名称,Integer 购买数量>
+					将购物车放入session中
+					
+				将商品添加到购物车分析：
+					获取购物车
+					判断购物车是否为空
+						若为空：
+							第一次添加
+							创建一个购物车
+							将当前商品put进去
+							将购物车放入session中
+						若不为空：继续判断购物车中是否有该商品
+							若有：
+								取出count 将数量加一
+								将商品再次放入购物车中
+							若无：
+								将当前商品put进去 数量为一
+				提示信息：你的xxx已添加到购物车中
+			3.点击购物车链接的时候 cart.jsp
+				从session中获取购物车
+					判断购物车是否为空
+						若为空：提示信息
+						若不为空：遍历购物车即可
+		案例3-扩展 清空购物车
+			思路1：将购物车移除
+			思路2：将session干掉
+		步骤分析：
+			在cart.jsp上添加超链接 清空购物车
+				<a href="/day1101/clearCart">清空购物车</a>
+			在clearCart中需要调用session.invalidate()
+			重定向到购物车页面上
+-->
