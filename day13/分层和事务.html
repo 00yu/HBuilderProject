@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	</body>
+</html>
+<!--
+	案例-使用mvc思想完成转账操作
+	需求:
+		在一个页面上有汇款人 收款人 转账金额 一旦转账之后，汇款人金额减少，收款人金额增多，使用事务控制
+	技术分析：
+		mvc思想
+		事务
+	
+	mvc思想
+		servlet->缺点：生成html内容太麻烦
+		 |
+		jsp->缺点：阅读起来不方便，维护比较困难
+		 |
+		jsp+javabean:
+			jsp的model1:
+				jsp:接受请求，展示数据
+				javabean:和数据打交道
+		 |
+		jsp+javabean+servlet
+			jsp的model2:
+				jsp:展示数据
+				javabean:和数据打交道
+				servlet:接收请求，处理业务逻辑
+			就是一个MVC思想的体现
+	MVC:
+		就是将业务逻辑，代码，显示相分离的一种思想
+		M:model 模型 作用：主要是封装数据，封装对数据的访问
+		V:view	视图 作用：主要是用来展示数据，一般是jsp担任的
+		C:ctrl 	控制 作用：接收请求，找到相应的javabean，完成业务逻辑
+	
+	jsp设计模式1 model1(了解)
+		javabean+jsp
+		javabean在model1中的使用(了解)
+			<jsp:userBean>
+			<!-- 接收值 -->
+			<jsp:useBean id="u" class="com.ydh.domain.User"></jsp:useBean>
+			<jsp:setProperty property="name" name="u"/>
+			<jsp:setProperty property="password" name="u"/>		
+			<!-- 打印值 -->
+			<jsp:getProperty property="name" name="u"/>
+	
+	反射：
+		1.获取class对象
+			方式1：
+				Class clazz=Class.forName("全限定名");
+			方式2：
+				Class clazz=类名.class;
+			方式3：
+				Class clazz=对象.getClass;
+		2.可以获取对应类的构造方法
+			Constructor con=clazz.getConstructor();
+			Person p=(Person) con.newInstance();
+			Constructor conn=clazz.getConstructor(String.class,String.class);
+			Person pp=(Person) conn.newInstance("tom","123");
+		3.可以通过clazz创建一个对象(了解)
+			clazz.newInstance();//相当于调用的无参构造器
+			//1.获取class对象
+			Class clazz=Class.forName("com.ydh.domain.Person");
+			//2.获取构造器(了解)
+			Person p=(Person) clazz.newInstance();
+		4.可以通过clazz获取所有的字段 getFiled() (了解中的了解)
+		5.可以通过clazz获取任意的方法
+			//1.获取class对象
+			Class clazz=Class.forName("com.ydh.domain.Person");
+			//2.获取方法
+			//Method m=clazz.getMethod("sleep");只能获取公共的方法
+			Method m=clazz.getDeclaredMethod("sleep");//获取任意的方法(包括私有的方法)
+			//2.1若是私有的方法，必须让该方法可以被访问
+			m.setAccessible(true);
+			m.invoke(clazz.newInstance());
+		6.Method对象的invoke是有返回值的，返回值就是目标方法执行的返回值
+			//1.获取class对象
+			Class clazz=Class.forName("com.ydh.domain.Person");
+			//2.获取私有的方法
+			Method m=clazz.getDeclaredMethod("sleep", String.class);
+			m.setAccessible(true);
+			//3.让方法执行
+			String res=(String) m.invoke(clazz.newInstance(),"tom");
+			System.out.println(res);
+		总结:
+			有了class对象之后无所不能
+	
+	javabean在model2中使用	
+		BeanUtils：可以看作封装数据的一个工具类
+			使用步骤：
+				1.导入jar包
+				2.使用BeanUtils.populate(Object bean,Map map); 反射思想
+	
+	分层：javaee的三层架构
+		web层	表示层
+			作用：
+				展示数据---jsp
+				---servlet---
+				接收请求
+				找到对应的service，调用方法 完成逻辑操作
+				信息生成或者页面跳转
+		service层	业务逻辑层
+			作用：
+				完成业务操作
+				调用dao层
+		dao层(data access object数据访问对象)	数据访问层
+			作用：
+				对数据库的curd操作
+				
+	事务：
+		就是一件完整的事情，包含多个操作单元，这些操作要么全部成功，要么全部失败
+		例如：转账
+			包含转出操作和转入操作
+		mysql中的事务(了解)：
+			mysql中事务默认是自动提交的，一条sql语句就是一个事务
+			开启手动事务方式
+				方式1：关闭自动事务(了解)
+					set autocommit = off;
+				方式2：手动开启一个事务
+					start transaction;-- 手动开启一个事务
+					commit;-- 事务提交
+					rollback;-- 事务回滚(恢复到开启事务之前状态)
+			扩展：
+				oracle中事务默认是手动的，必须手动提交才可以
+			例如：
+				创建数据库和表
+				create database day13;
+				use day13;
+				create table account(
+					name varchar(20),
+					money int
+				);
+				insert into account values('aa','1000');
+				insert into account values('bb','1000');
+			完成 aa给bb转500;
+				update account set money = money - 500 where name = 'aa';
+				update account set money = money + 500 where name = 'bb';
+		java中的事务：
+			Connection接口的api：☆
+				setAutoCommit(false);//手动开启一个事务
+				commit()：事务提交
+				rollback()：事务回滚
+			
+			扩展：了解 Savepoint还原点
+				void rollback(Savepoint savepoint):还原到还原点 
+				Savepoint setSavepoint():设置还原点
+			
+	步骤分析：
+		1.数据库和表
+		2.新建一个项目 day1301
+		3.导入jar包和工具类
+			驱动 jdbcUtils
+			c3p0及其配置文件和工具类
+			dbutils
+		4.新建一个account.jsp 表单
+		5.accountservlet:
+			接收三个参数
+			调用accountservice.account()完成转账操作
+			打印信息
+		6.account方法中：
+			使用jdbc不考虑事务
+			调用dao完成转出操作
+			调用dao完成转入操作
+		7.dao中sql语句
+		
+		一旦出现异常，钱飞了
+		要想避免这种事情，必须添加事务，在service添加事务
+		为了保证所有的操作在一个事务中，必须保证使用的是同一个连接
+		在service层我们获取了连接，开启了事务。如何在dao层使用此连接呢？
+			方法1：
+				向下传递参数，注意连接应该在service释放
+			方法2：
+				可以将connection对象绑定到当前线程上
+				jdk中有一个ThreadLocal类，
+				ThreadLocal实例通常是类中的private static字段，
+				它们希望将状态与某一个线程(例如用户ID或者事务ID)相关联
+		ThreadLocal的方法：
+			构造：
+				new ThreadLocal()
+			set(Object value)：将内容和当前线程绑定
+			Object get()：获取和当前线程绑定的内容
+			remove()：将当前线程和内容解绑
+		内部维护了map集合
+			map.put(当前线程,内容);
+			map.get(当前线程)
+			map.remomve(当前线程)
+	
+	DButils:
+		1.创建QueryRunner
+		2.编写sql
+		3.执行sql
+	QueryRunner:
+		构造:
+			new QueryRunner(DataSource ds)：自动事务
+			new QueryRunner()：手动事务
+		常用方法：
+			update(Connection conn,String sql,Object... params)：执行curd操作
+	
+	事务总结：
+		事务的特性：☆☆☆☆
+			ACID
+			原子性：事务里面的操作单元不可切割，要么全部成功，要么全部失败
+			一致性：事务执行前后，业务状态和其他业务状态保持一致(aa和bb总和保持不变)
+			隔离性：一个事务执行的时候，最好不要受到其他事务的影响
+			持久性：一旦事务提交或者回滚。这个状态都要持久化到数据库中
+		不考虑隔离性会出现的读问题：☆☆☆
+			脏读：在一个事务中读取到另一个事务没有提交的数据
+			不可重复读：在一个事务中两次查询的结果不一致(针对的是update操作)
+			虚读(幻读)：在一个事务中两次查询的结果不一致(针对的是insert操作)
+		通过设置数据库的隔离级别来避免以上的问题(理解)
+			read uncommited 读未提交 上面的三个问题都会出现
+			read commited 读已提交 可以避免脏读的发生
+			repeatable read 可重复读 可以避免脏读和重复读的发生
+			serializable 串行化 可以避免所有的问题
+			
+	了解
+		演示脏读的发生：
+			将数据库的隔离级别设置成 读未提交
+				set session transaction isolation level read uncommitted;
+			查看数据库的隔离级别
+				select @@tx_isolation;
+		避免脏读的发生：
+			将隔离级别设置成 读已提交
+				set session transaction isolation level read committed;
+				不可避免不可重复读的发生(bb一个事务中查到aa转来的钱)
+		避免不可重复读的发生：
+			将隔离级别设置成 可重复读
+				set session transaction isolation level repeatable read;
+				避免了不可重复读的发生(bb提交事务后查到aa转来的钱)
+		演示串行化 可以避免所有的问题(sql默认避免虚读)
+				set session transaction isolation level serializable;
+				锁表的操作 aa提交事务后bb才能查，在aa提交事务过程中bb一直等待没有结果
+	
+	四种隔离级别的效率
+		read uncommitted>read committed>repeatable read>serializable
+	四种隔离级别的安全性：
+		read uncommitted<read committed<repeatable read<serializable
+	开发中绝对不允许脏读的发生.
+		mysql中默认级别:reapeatable read
+		oracle中默认级别:read committed
+		可以使用read committed和repeatable read
+		
+	java中控制隔离级别:(了解)
+		Connection的api
+			int getTransactionIsolation():获取此 Connection对象的当前事务隔离级别。
+			void setTransactionIsolation(int level):尝试将此 Connection对象的事务隔离级别更改为给定的对象。  
+-->

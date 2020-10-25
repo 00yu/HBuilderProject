@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	</body>
+</html>
+<!--
+	案例1-展示所有商品
+	需求：
+		点击首页上的超链接，在页面上展示所有的商品信息
+	步骤分析：
+		1.数据库和表
+			create database day14;
+			use day14;
+			create table `product` (
+				`pid` varchar (96),
+				`pname` varchar (150),
+				`market_price` double ,
+				`shop_price` double ,
+				`pimage` varchar (600),
+				`pdate` date ,
+				`pdesc` varchar (765)
+			); 
+			INSERT INTO `product` VALUES('1','小米 4c 标准版','1399','1299','products/1/c_0001.jpg','2015-11-02','小米 4c 标准版 全网通 白色 移动联通电信4G手机 双卡双待');
+			INSERT INTO `product` VALUES('10','华为 Ascend Mate7','2699','2599','products/1/c_0010.jpg','2015-11-02','华为 Ascend Mate7 月光银 移动4G手机 双卡双待双通6英寸高清大屏，纤薄机身，智能超八核，按压式指纹识别！!选择下方“移动老用户4G飞享合约”，无需换号，还有话费每月返还！');
+			INSERT INTO `product`  VALUES('11','vivo X5Pro','2399','2298','products/1/c_0014.jpg','2015-11-02','移动联通双4G手机 3G运存版 极光白【购机送蓝牙耳机+蓝牙自拍杆】新升级3G运行内存·双2.5D弧面玻璃·眼球识别技术');
+			INSERT INTO `product`  VALUES('12','努比亚（nubia）My 布拉格','1899','1799','products/1/c_0013.jpg','2015-11-02','努比亚（nubia）My 布拉格 银白 移动联通4G手机 双卡双待【嗨11，下单立减100】金属机身，快速充电！布拉格相机全新体验！');
+			INSERT INTO `product`  VALUES('13','华为 麦芒4','2599','2499','products/1/c_0012.jpg','2015-11-02','华为 麦芒4 晨曦金 全网通版4G手机 双卡双待金属机身 2.5D弧面屏 指纹解锁 光学防抖');
+			INSERT INTO `product`  VALUES('14','vivo X5M','1899','1799','products/1/c_0011.jpg','2015-11-02','vivo X5M 移动4G手机 双卡双待 香槟金【购机送蓝牙耳机+蓝牙自拍杆】5.0英寸大屏显示·八核双卡双待·Hi-Fi移动KTV');
+			INSERT INTO `product`  VALUES('15','Apple iPhone 6 (A1586)','4399','4288','products/1/c_0015.jpg','2015-11-02','Apple iPhone 6 (A1586) 16GB 金色 移动联通电信4G手机长期省才是真的省！点击购机送费版，月月送话费，月月享优惠，畅享4G网络，就在联通4G！');
+
+		2.新建一个项目
+		3.导入jar包
+			驱动 dbutils c3p0 jstl beanutils
+		4.新建包结构
+			utils工具类：datasourceutils
+			导入c3p0配置文件
+		5.新建首页index.jsp
+			添加一个超链接
+		6.点击超链接 发送一个servlet(FindAllServlet)
+		7.FindAllServlet
+			调用service，查询所有的商品 返回值：list
+			将list放入request域中，请求转发 product_list.jsp
+			
+	案例2-添加商品
+	需求：
+		在index.jsp添加一个超链接，跳转到一个页面，用来填写商品信息，点击保存按钮，将商品保存到数据库中
+	步骤分析：
+		1.在index.jsp添加一个超链接
+			跳转到add.jsp
+		2.在add.jsp放入一个表单
+		3.表单提交到 AddProductServlet
+			封装数据
+			调用service完成保存操作
+			跳转到FindAllServlet
+			(请求转发和重定向)
+	有表单使用的时候，若使用请求转发会出现重复提交的问题
+		方案1：
+			重定向
+		方案2：
+			令牌机制(了解)
+	
+	案例3-修改商品信息：
+	需求：
+		在product_list.jsp中每一个商品后面都有修改操作。点击修改操作，到了一个edit.jsp(将原来的数据展示出来)，最后保存就可以了
+	步骤分析：
+		先查询后修改
+		查询步骤分析：
+			点击修改连接的时候
+				<a href="/day14/getProductById?pid=..."></a>
+			getProductById
+				获取pid
+				通过pid获取到商品 返回值Product对象
+				将Product放入request域中 请求转发到edit.jsp上
+		修改步骤分析：
+			edit.jsp已经将商品所有信息展示出来
+				需要将商品id通过隐藏域放入表单中
+				点击保存，需要跳转到editProductServlet上
+			editProductServlet：
+				1.封装数据
+				2.调用service完成修改更新操作
+				3.页面跳转到 FindAllServlet(重定向)
+	案例4-删除商品
+	需求：
+		在列表页面上，点击一个商品的删除操作，弹出一个提示，点击确定的时候，删除当前商品	
+	步骤分析：
+		先给删除添加事件
+			单击事件 弹出提示
+				confirm()
+			点击确定 再去删除商品
+				location.href="/day14/deleteProductById?pid=xxx" 相当于超链接
+		deleteProductById
+			1.获取商品id
+			2.调用serviec完成删除操作
+			3.页面重定向 FindAllServlet
+			
+	扩展：删除多个商品：
+	需求：
+		在每个商品前面添加复选框，勾选需要删除的商品，添加一个按钮(删除选中)，点击之后需要删除选中的商品
+	步骤分析：
+		给每一个商品添加复选框(全选全不选)，同时添加name属性 值为"pid",value为当前商品的pid
+		点击删除选中，需要将勾选上的商品id提交到后台
+			request.getParameterValues("pid")
+			必须把所有的商品放入表单中，
+				需要在按钮上添加事件
+					需要先获取表单，调用表单的submit()
+		delCheckedServlet:
+			1.获取所有要删除的商品id String[] ids
+			2.调用service完成操作
+			3.页面重定向
+-->
